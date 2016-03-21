@@ -27,7 +27,7 @@ angular.module('stockMarketMobile.services', [])
 
     $http.get(url)
       .success(function(json) {
-        console.log(jsonData);
+        console.log(json);
         var jsonData = json.list.resources[0].resource.fields;
         deferred.resolve(jsonData);
       })
