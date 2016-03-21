@@ -62,9 +62,33 @@ angular.module('stockMarketMobile.controllers', [])
 
 }])
 
-.controller('StockCtrl', ['$scope', '$stateParams',
-  function($scope, $stateParams) {
+.controller('StockCtrl', ['$scope', '$stateParams', 'stockDataService',
+  function($scope, $stateParams, stockDataService) {
 
-  $scope.ticker = $stateParams.stock
+    $scope.ticker = $stateParams.stockTicker;
+
+    $scope.$on("$ionicView.afterEnter", function() {
+      getPriceData();
+      getDetailsData();
+    })
+
+    function getPriceData() {
+
+      var promise = stockDataService.getPriceData($scope.ticker)
+
+      promise.then(function(data) {
+        console.log(data);
+      });
+    }
+
+    function getDetailsData() {
+
+      var promise = stockDataService.getDetailsData($scope.ticker)
+
+      promise.then(function(data) {
+        console.log(data);
+      });
+    }
+
 
 }]);
