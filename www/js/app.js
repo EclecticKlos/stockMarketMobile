@@ -1,5 +1,7 @@
 angular.module('stockMarketMobile', [
   'ionic',
+  'nvd3',
+  'nvChart',
   'stockMarketMobile.controllers',
   'stockMarketMobile.services',
   'stockMarketMobile.filters',
