@@ -81,15 +81,16 @@ angular.module('stockMarketMobile.controllers', [])
     }
 
     $scope.addNote = function() {
-      $scope.note = {title: 'Note', body: '', date: $scope.todayDate, ticker: $scope.ticker};
+      $scope.note = {title: 'Note title', body: '', date: $scope.todayDate, ticker: $scope.ticker};
 
       var note = $ionicPopup.show({
         template: '<input type="text" ng-model="note.title" id="stock-note-title"><textarea type="text" ng-model="note.body" id="stock-note-body"></textarea>',
-        title: 'New Note for' + $scope.ticker,
+        title: 'New Note for ' + $scope.ticker,
         scope: $scope,
         buttons: [
           {
             text: 'Cancel',
+            type: 'button-light',
             onTap: function(e) {
               return;
             }
