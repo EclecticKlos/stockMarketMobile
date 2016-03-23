@@ -42,28 +42,16 @@ angular.module('stockMarketMobile.controllers', [])
   };
 })
 
-.controller('MyStocksCtrl', ['$scope',
-  function($scope) {
+.controller('MyStocksCtrl', ['$scope','myStocksArrayService',
+  function($scope, myStocksArrayService) {
 
-    $scope.myStocksArray = [
-      {ticker: "AAPL"},
-      {ticker: "GPRO"},
-      {ticker: "FB"},
-      {ticker: "NFLX"},
-      {ticker: "TSLA"},
-      {ticker: "BRK-A"},
-      {ticker: "INTC"},
-      {ticker: "MSFT"},
-      {ticker: "GE"},
-      {ticker: "BAC"},
-      {ticker: "C"},
-      {ticker: "T"},
-    ];
+    $scope.myStocksArray = myStocksArrayService;
+    console.log(myStocksArrayService);
 
 }])
 
-.controller('StockCtrl', ['$scope', '$stateParams', '$window', '$ionicPopup', 'stockDataService', 'dateService', 'chartDataService',
-  function($scope, $stateParams, $window, $ionicPopup, stockDataService, dateService, chartDataService) {
+.controller('StockCtrl', ['$scope', '$stateParams', '$window', '$ionicPopup', 'stockDataService', 'dateService', 'chartDataService', 'newsService',
+  function($scope, $stateParams, $window, $ionicPopup, stockDataService, dateService, chartDataService, newsService) {
 
     $scope.ticker = $stateParams.stockTicker;
     $scope.chartView = 4;
@@ -74,7 +62,14 @@ angular.module('stockMarketMobile.controllers', [])
       getPriceData();
       getDetailsData();
       getChartData();
+      getNews();
+      // $scope.stockNotes = notesService.getNotes($scope.ticker);
     });
+
+    $scope.openWindow = function(link) {
+      //TODO: Install and setup InAppBrowsers
+      console.log("openWindow --> " + link)
+    };
 
     $scope.chartViewFunc = function(n) {
       $scope.chartView = n;
@@ -110,10 +105,20 @@ angular.module('stockMarketMobile.controllers', [])
       });
     };
 
+
+    function getNews() {
+      $scope.newsStories = [];
+
+      var promise = newsService.getNews($scope.ticker);
+
+      promise.then(function(data) {
+        $scope.newsService = data;
+      })
+    }
+
+
     function getPriceData() {
-
-      var promise = stockDataService.getPriceData($scope.ticker)
-
+      var promise = stockDataService.getPriceData($scope.ticker);
       promise.then(function(data) {
         $scope.stockPriceData = data;
 
