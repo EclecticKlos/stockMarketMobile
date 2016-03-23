@@ -27,26 +27,74 @@ angular.module('stockMarketMobile.services', [])
     currentDate: currentDate,
     oneYearAgoDate: oneYearAgoDate
   }
+})
+
+
+.factory('chartDataCacheService', function(CacheFactory) {
+
+  var chartDataCache;
+
+  if(!CacheFactory.get('chartDataCache')){
+    chartDataCache = CacheFactory('chartDataCache', {
+      maxAge: 60 * 60 * 8 * 1000,
+      deleteOnExpire: 'aggressive',
+      storageMode: 'localStorage'
+    })
+  }
+  else {
+    chartDataCache = CacheFactory.get('chartDataCache');
+  }
+  return chartDataCache;
+})
+
+
+.factory('stockDetailsCacheService', function(CacheFactory) {
+
+  var stockDetailsCache;
+
+  if (!CacheFactory.get('stockDetailsCache')) {
+    stockDetailsCache = CacheFactory('stockDetailsCache', {
+      maxAge: 60 * 1000,
+      deleteOnExpire: 'aggressive',
+      storageMode: 'localStorage'
+    })
+  }
+  else {
+    stockDetailsCache = CacheFactory.get('stockDetailsCache');
+  }
+
+  return stockDetailsCache
 
 })
 
-.factory('stockDataService', function($q, $http, encodeURIService) {
+
+.factory('stockDataService', function($q, $http, encodeURIService, stockDetailsCacheService) {
 
   var getDetailsData = function(ticker) {
 
     var deferred = $q.defer(),
+
+    cacheKey = ticker,
+    stockDetailsCache = stockDetailsCacheService.get(cacheKey),
+
     query = 'select *  from yahoo.finance.quotes where symbol in ("' + ticker + '")',
     url = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIService.encode(query) + '&format=json&env=http://datatables.org/alltables.env';
 
-    $http.get(url)
+    if (stockDetailsCache) {
+      deferred.resolve(stockDetailsCache)
+    }
+    else {
+      $http.get(url)
       .success(function(json) {
         var jsonData = json.query.results.quote;
         deferred.resolve(jsonData);
+        stockDetailsCacheService.put(cacheKey, jsonData)
       })
       .error(function(error) {
         console.log("Details  data error:  " + error);
         deferred.reject();
       });
+    }
 
     return deferred.promise;
 
@@ -79,14 +127,22 @@ angular.module('stockMarketMobile.services', [])
 })
 
 
-.factory('chartDataService', function($q, $http, encodeURIService) {
+.factory('chartDataService', function($q, $http, encodeURIService, chartDataCacheService) {
   var getHistoricalData = function(ticker, fromDate, todayDate) {
 
     var deferred = $q.defer();
+
+    cacheKey = ticker,
+    chartDataCache = chartDataCacheService.get(cacheKey),
+
     query = 'select * from yahoo.finance.historicaldata where symbol = "' + ticker + '" and startDate = "' + fromDate + '" and endDate = "' + todayDate + '"';
     url = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIService.encode(query) + '&format=json&env=http://datatables.org/alltables.env';
 
-    $http.get(url)
+    if (chartDataCache) {
+      deferred.resolve(chartDataCache);
+    }
+    else {
+      $http.get(url)
       .success(function(json) {
         var jsonData = json.query.results.quote;
 
@@ -123,11 +179,13 @@ angular.module('stockMarketMobile.services', [])
           '}]';
 
         deferred.resolve(formattedChartData);
+        chartDataCacheService.put(cacheKey, formattedChartData);
       })
       .error(function(error) {
         console.log("Chart data error: " + error);
         deferred.reject();
       });
+    }
 
     return deferred.promise;
 
