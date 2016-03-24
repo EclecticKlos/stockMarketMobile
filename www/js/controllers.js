@@ -42,54 +42,51 @@ angular.module('stockMarketMobile.controllers', [])
   };
 })
 
-.controller('MyStocksCtrl', ['$scope',
-  function($scope) {
+.controller('MyStocksCtrl', ['$scope','myStocksArrayService',
+  function($scope, myStocksArrayService) {
 
-    $scope.myStocksArray = [
-      {ticker: "AAPL"},
-      {ticker: "GPRO"},
-      {ticker: "FB"},
-      {ticker: "NFLX"},
-      {ticker: "TSLA"},
-      {ticker: "BRK-A"},
-      {ticker: "INTC"},
-      {ticker: "MSFT"},
-      {ticker: "GE"},
-      {ticker: "BAC"},
-      {ticker: "C"},
-      {ticker: "T"},
-    ];
+    $scope.myStocksArray = myStocksArrayService;
+    console.log(myStocksArrayService);
 
 }])
 
-.controller('StockCtrl', ['$scope', '$stateParams', '$window', '$ionicPopup', 'stockDataService', 'dateService', 'chartDataService',
-  function($scope, $stateParams, $window, $ionicPopup, stockDataService, dateService, chartDataService) {
+.controller('StockCtrl', ['$scope', '$stateParams', '$window', '$ionicPopup', 'stockDataService', 'dateService', 'chartDataService', 'newsService', 'followStockService',
+  function($scope, $stateParams, $window, $ionicPopup, stockDataService, dateService, chartDataService, newsService, followStockService) {
 
     $scope.ticker = $stateParams.stockTicker;
     $scope.chartView = 4;
     $scope.oneYearAgoDate = dateService.oneYearAgoDate();
     $scope.todayDate = dateService.currentDate();
+    $scope.following = followStockService.checkFollow($scope.ticker);
 
     $scope.$on("$ionicView.afterEnter", function() {
       getPriceData();
       getDetailsData();
       getChartData();
+      getNews();
+      // $scope.stockNotes = notesService.getNotes($scope.ticker);
     });
+
+    $scope.openWindow = function(link) {
+      //TODO: Install and setup InAppBrowsers
+      console.log("openWindow --> " + link)
+    };
 
     $scope.chartViewFunc = function(n) {
       $scope.chartView = n;
     }
 
     $scope.addNote = function() {
-      $scope.note = {title: 'Note', body: '', date: $scope.todayDate, ticker: $scope.ticker};
+      $scope.note = {title: 'Note title', body: '', date: $scope.todayDate, ticker: $scope.ticker};
 
       var note = $ionicPopup.show({
         template: '<input type="text" ng-model="note.title" id="stock-note-title"><textarea type="text" ng-model="note.body" id="stock-note-body"></textarea>',
-        title: 'New Note for' + $scope.ticker,
+        title: 'New Note for ' + $scope.ticker,
         scope: $scope,
         buttons: [
           {
             text: 'Cancel',
+            type: 'button-light',
             onTap: function(e) {
               return;
             }
@@ -109,10 +106,20 @@ angular.module('stockMarketMobile.controllers', [])
       });
     };
 
+
+    function getNews() {
+      $scope.newsStories = [];
+
+      var promise = newsService.getNews($scope.ticker);
+
+      promise.then(function(data) {
+        $scope.newsService = data;
+      })
+    }
+
+
     function getPriceData() {
-
-      var promise = stockDataService.getPriceData($scope.ticker)
-
+      var promise = stockDataService.getPriceData($scope.ticker);
       promise.then(function(data) {
         $scope.stockPriceData = data;
 

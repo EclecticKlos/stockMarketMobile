@@ -68,6 +68,87 @@ angular.module('stockMarketMobile.services', [])
 })
 
 
+.factory('fillMyStocksCacheService', function(CacheFactory) {
+
+  var myStocksCache;
+
+  if (!CacheFactory.get('myStocksCache')){
+    myStocksCache = new CacheFactory('myStocksCache', {
+      storageMode: 'localStorage'
+    });
+  }
+  else {
+    myStocksCache = CacheFactory.get('myStocksCache');
+  }
+
+  var fillMyStocksCache = function() {
+    var myStocksArray = [
+      {ticker: "AAPL"},
+      {ticker: "GPRO"},
+      {ticker: "FB"},
+      {ticker: "NFLX"},
+      {ticker: "TSLA"},
+      {ticker: "BRK-A"},
+      {ticker: "INTC"},
+      {ticker: "MSFT"},
+      {ticker: "GE"},
+      {ticker: "BAC"},
+      {ticker: "C"},
+      {ticker: "T"},
+    ];
+
+    myStocksCache.put('myStocks', myStocksArray)
+  };
+
+  return {
+    fillMyStocksCache: fillMyStocksCache
+  };
+})
+
+
+.factory('myStocksCacheService', function(CacheFactory) {
+
+  var myStocksCache = CacheFactory.get('myStocksCache');
+
+  return myStocksCache;
+})
+
+
+.factory('myStocksArrayService', function(fillMyStocksCacheService, myStocksCacheService) {
+  if (!myStocksCacheService.info('myStocks')) {
+    fillMyStocksCacheService.fillMyStocksCache();
+  }
+
+  var myStocks = myStocksCacheService.get('myStocks');
+
+  return myStocks;
+})
+
+
+.factory('followStockService', function(myStocksArrayService, myStocksCacheService) {
+
+  return {
+    follow: function(ticker){
+
+    },
+    unfollow: function(ticker){
+    },
+
+    checkFollowing: function(ticker){
+
+      for (var i=0; i < myStocksArrayService.length; i++){
+        if (myStocksArrayService[i].ticker === ticker) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+  }
+
+})
+
+
 .factory('stockDataService', function($q, $http, encodeURIService, stockDetailsCacheService) {
 
   var getDetailsData = function(ticker) {
@@ -196,5 +277,35 @@ angular.module('stockMarketMobile.services', [])
   }
 })
 
-;
+.factory('newsService', function($q, $http) {
+
+  return {
+    getNews: function(ticker) {
+      var deferred = $q.defer(),
+      x2js = new X2JS(),
+      url = "http://finance.yaho.com/rss/headline?s=" + ticker;
+
+      $http.get(url)
+        .success(function(xml) {
+          var xmlDoc = x2js.parseXmlString(xml),
+          json = x2js.xml2json(xmlDoc),
+          withCredentials = true,
+          headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          jsonData = json.rss.channel.item;
+
+          deferred.resolve(jsonData);
+        })
+        .error(function(error){
+          deferred.reject();
+          console.log("News error: " + error);
+        })
+      return deferred.promise;
+    }
+  }
+
+});
+
+
 

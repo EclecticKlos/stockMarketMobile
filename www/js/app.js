@@ -3,6 +3,7 @@ angular.module('stockMarketMobile', [
   'angular-cache',
   'nvd3',
   'nvChart',
+  'cb.x2js',
   'stockMarketMobile.controllers',
   'stockMarketMobile.services',
   'stockMarketMobile.filters',
@@ -54,4 +55,12 @@ angular.module('stockMarketMobile', [
   });
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/app/my-stocks');
-});
+})
+
+// .config(['$httpProvider', function ($httpProvider) {
+//   //Reset headers to avoid OPTIONS request (aka preflight)
+//   $httpProvider.defaults.headers.common = {};
+//   $httpProvider.defaults.headers.post = {};
+//   $httpProvider.defaults.headers.put = {};
+//   $httpProvider.defaults.headers.patch = {};
+// }]);
