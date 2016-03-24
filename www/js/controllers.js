@@ -50,13 +50,14 @@ angular.module('stockMarketMobile.controllers', [])
 
 }])
 
-.controller('StockCtrl', ['$scope', '$stateParams', '$window', '$ionicPopup', 'stockDataService', 'dateService', 'chartDataService', 'newsService',
-  function($scope, $stateParams, $window, $ionicPopup, stockDataService, dateService, chartDataService, newsService) {
+.controller('StockCtrl', ['$scope', '$stateParams', '$window', '$ionicPopup', 'stockDataService', 'dateService', 'chartDataService', 'newsService', 'followStockService',
+  function($scope, $stateParams, $window, $ionicPopup, stockDataService, dateService, chartDataService, newsService, followStockService) {
 
     $scope.ticker = $stateParams.stockTicker;
     $scope.chartView = 4;
     $scope.oneYearAgoDate = dateService.oneYearAgoDate();
     $scope.todayDate = dateService.currentDate();
+    $scope.following = followStockService.checkFollow($scope.ticker);
 
     $scope.$on("$ionicView.afterEnter", function() {
       getPriceData();

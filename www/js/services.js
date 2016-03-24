@@ -125,7 +125,7 @@ angular.module('stockMarketMobile.services', [])
 })
 
 
-.factory('followStockService', function() {
+.factory('followStockService', function(myStocksArrayService, myStocksCacheService) {
 
   return {
     follow: function(ticker){
@@ -136,6 +136,12 @@ angular.module('stockMarketMobile.services', [])
 
     checkFollowing: function(ticker){
 
+      for (var i=0; i < myStocksArrayService.length; i++){
+        if (myStocksArrayService[i].ticker === ticker) {
+          return true;
+        }
+      }
+      return false;
     }
 
   }
